@@ -18,7 +18,7 @@
 
             double raySpeed = 0.2;
             double raySpread = 0.1;
-            double oobValue = 0; //returned if a bay would spawn out of bounds
+            double oobValue = 0; // returned if a bay would spawn out of bounds
 
             // create test map
             for (int i = 0; i < map.GetLength(0); i++)
@@ -105,9 +105,6 @@
                 }
 
                 //Console.SetCursorPosition(0, 0);
-
-                Console.WriteLine(viewdistance);
-                Console.WriteLine(viewdistance * 10);
 
                 for (int i = 0; i < raydistance * 10; i++)
                 {
