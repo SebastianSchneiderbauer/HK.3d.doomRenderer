@@ -2,18 +2,22 @@
 {
     internal class Program
     {
-        static int[,] map = new int[11, 11];
+        static int[,] map = new int[11, 5]; // y then x, because c# does a little bit of trolling
 
-        static (double, double) playerPosition = (6, 6);
+        static (double, double) playerPosition = (2, 2);
 
-        static int fov = 60; // in degrees
+        static int fov = 90; // in degrees
+        static double rad = Math.PI / 180;
+        static double fovRadians = rad * fov; // in radians
         static double viewdistance = 10.0; // in mapunits(one index in the map array is one mapunit)
         static double playerRotation = 0; // in radians
-        static double turnSpeed = (2 * Math.PI) / 360; // fuck deltatime
+        static double turnSpeed = (2 * Math.PI) / 360;
 
         static double raySpeed = 0.2;
-        static double raySpread = 0.1;
         static double oobValue = 0; // returned if a bay would spawn out of bounds
+        static double raySpread = 0.1;
+
+        static int windowHeight = (fov / 16) * 9; // times 2 multiplier;
 
         static void Main(string[] args)
         {
@@ -43,6 +47,8 @@
                 }
             }
 
+            //printMap(map);
+
             // "game" loop
             while (true)
             {
@@ -57,19 +63,49 @@
                     playerRotation = (playerRotation - turnSpeed + Math.PI * 2) % (Math.PI * 2);
                 }
 
-                double raydistance = castRay(playerPosition, playerRotation);
+                //wrong fisheye approach
+                List<double> rayDistances = new List<double>();
 
-                for (int i = 0; i < raydistance * 10; i++)
+                for (int i = fov/-2; i <= fov/2; i++)
                 {
-                    Console.Write("##");
+                    double change = i * rad;
+                    rayDistances.Add(castRay(playerPosition, playerRotation + change));
                 }
-                Console.WriteLine();
+
+                drawWalls(rayDistances);
             }
+        }
+
+        static void drawWalls(List<double> rayDistances)
+        {
+            Console.SetCursorPosition(0, 0);
+
+            String walls = "";
+
+            for(int i = windowHeight; i > 0; i--)
+            {
+                for (int j = 0; j < rayDistances.Count; j++)
+                {
+                    double distance = rayDistances[j]*(windowHeight/10);
+                    if (distance >= i)
+                    {
+                        walls += "██";
+                    }
+                    else
+                    {
+                        walls += "  ";
+                    }
+                }
+
+                walls += "\n";
+            }
+
+            Console.WriteLine(walls);
         }
 
         static double castRay((double,double)origin, double direction)
         {
-            (double, double) ray = (Math.Sin(direction), Math.Cos(direction));
+            (double, double) ray = (- Math.Sin(direction), Math.Cos(direction));
 
             (double, double) rayposition = origin;
             double raydistance = oobValue;
