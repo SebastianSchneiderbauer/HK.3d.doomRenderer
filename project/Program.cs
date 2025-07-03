@@ -8,7 +8,7 @@
 
         static int fov = 111; // in degrees
         static double rad = Math.PI / 180;
-        static double viewdistance = 10.0; // in mapunits(one index in the map array is one mapunit)
+        static double viewdistance = 100.0; // in mapunits(one index in the map array is one mapunit)
         static double playerRotation = 0; // in radians
         static double turnSpeed = (2 * Math.PI) / 360;
 
@@ -32,7 +32,7 @@
             Console.CursorVisible = false;
             while (true)
             {
-                renderFrame();
+                calculateFrame();
 
                 char c = Console.ReadKey(true).KeyChar;
 
@@ -98,13 +98,13 @@
                     {
                         for (int j = 0; j < map.GetLength(1); j++)
                         {
-                            if (j == 0 || (j >= 4  && j <= map.GetLength(1) - 5) || j == map.GetLength(1) - 1)
+                            if (j == 0 || (j >= 4 && j <= map.GetLength(1) - 5) || j == map.GetLength(1) - 1)
                             {
                                 map[i, j] = 1;
                             }
                         }
                     }
-                    else if ((i > 0 && i < 4) || (i < map.GetLength(1)-1 && i > map.GetLength(1) - 5))
+                    else if ((i > 0 && i < 4) || (i < map.GetLength(1) - 1 && i > map.GetLength(1) - 5))
                     {
                         for (int j = 0; j < map.GetLength(1); j++)
                         {
@@ -121,7 +121,7 @@
         }
 
         // right nopn fisheye approach
-        static void renderFrame()
+        static void calculateFrame()
         {
             List<double> rayDistances = new List<double>();
 
@@ -129,10 +129,8 @@
             {
                 double change = i * rad;
                 double hypotenuse = castRay(playerPosition, playerRotation + change);
-                double angle = 90 * rad - Math.Abs(change);
-                double oppositeSide = Math.Sin(angle) * hypotenuse;
-
-                rayDistances.Add(oppositeSide);
+                double correctedDistance = hypotenuse * Math.Cos(change);
+                rayDistances.Add(correctedDistance);
             }
 
             drawWalls(rayDistances);
@@ -155,30 +153,43 @@
         static void drawWalls(List<double> rayDistances)
         {
             Console.SetCursorPosition(0, 0);
+            string frame = "";
 
-            string walls = "";
-
-            for (int i = windowHeight; i > 0; i--)
+            for (int y = 0; y < windowHeight; y++)
             {
-                for (int j = 0; j < rayDistances.Count; j++)
+                for (int x = 0; x < rayDistances.Count; x++)
                 {
-                    double distance = rayDistances[j] * (windowHeight / 10);
-                    if (distance >= i)
+                    int wallHeight = (int)(windowHeight / Math.Max(0.01, rayDistances[x]));
+                    int ceiling = (windowHeight - wallHeight) / 2;//you can use this if you want to limit the height of walls
+                    int floor = ceiling + wallHeight;
+
+                    if (y >= ceiling && y <= floor)
                     {
-                        walls += "  ";
+                        if (rayDistances[x] > 12)
+                        {
+                            frame += "░░";
+                        }
+                        else if (rayDistances[x] > 8) {
+                            frame += "▒▒";
+                        }
+                        else if (rayDistances[x] > 4)
+                        {
+                            frame += "▓▓";
+                        }
+                        else
+                        {
+                            frame += "██";
+                        }
                     }
                     else
                     {
-                        walls += "██";
+                        frame += "  ";
                     }
                 }
-
-                walls += "\n";
+                frame += "\n";
             }
 
-            Console.WriteLine(walls);
-            Console.WriteLine(playerRotation);
-            Console.WriteLine(playerPosition);
+            Console.Write(frame);
         }
 
         static double castRay((double, double) origin, double direction)
@@ -224,7 +235,7 @@
             {
                 for (int j = 0; j < map.GetLength(1); j++)
                 {
-                    Console.Write(map[i, j]+" ");
+                    Console.Write(map[i, j] + " ");
                 }
 
                 Console.WriteLine();
