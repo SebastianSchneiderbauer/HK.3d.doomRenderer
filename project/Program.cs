@@ -120,7 +120,7 @@
             printMap();
         }
 
-        // right nopn fisheye approach
+        // right non fisheye approach
         static void calculateFrame()
         {
             List<double> rayDistances = new List<double>();
@@ -155,10 +155,22 @@
             Console.SetCursorPosition(0, 0);
             string frame = "";
 
+            frame += "┌";
+
+            for (int x = 0; x < rayDistances.Count+1; x++)
+            {
+                frame += "──";
+            }
+
+            frame += "┐\n";
+
             for (int y = 0; y < windowHeight; y++)
             {
+                frame += "│ ";
+
                 for (int x = 0; x < rayDistances.Count; x++)
                 {
+                    // the only "vibe coded" part. I understand it though
                     int wallHeight = (int)(windowHeight / Math.Max(0.01, rayDistances[x]));
                     int ceiling = (windowHeight - wallHeight) / 2;//you can use this if you want to limit the height of walls
                     int floor = ceiling + wallHeight;
@@ -170,7 +182,8 @@
                         {
                             frame += "░░";
                         }
-                        else if ((rayDistances[x] / max) > 0.5) {
+                        else if ((rayDistances[x] / max) > 0.5)
+                        {
                             frame += "▒▒";
                         }
                         else if ((rayDistances[x] / max) > 0.25)
@@ -187,10 +200,19 @@
                         frame += "  ";
                     }
                 }
-                frame += "\n";
+                frame += " │\n";
+            }
+            
+            frame += "└";
+
+            for (int x = 0; x < rayDistances.Count+1; x++)
+            {
+                frame += "──";
             }
 
-            Console.Write(frame);
+            frame += "┘";
+
+            Console.Write(frame+ "\nw:   forewards\ns:   backwards\na/d: turn left/right");
         }
 
         static double castRay((double, double) origin, double direction)
