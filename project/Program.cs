@@ -2,9 +2,9 @@
 {
     internal class Program
     {
-        static int[,] map = new int[11, 5]; // y then x, because c# does a little bit of trolling
+        static int[,] map = new int[21, 11]; // y then x, because c# does a little bit of trolling
 
-        static (double, double) playerPosition = (2, 2);
+        static (double, double) playerPosition = (5, 5);
 
         static int fov = 90; // in degrees
         static double rad = Math.PI / 180;
@@ -47,11 +47,12 @@
                 }
             }
 
-            //printMap(map);
-
             // "game" loop
+            Console.CursorVisible = false;
             while (true)
             {
+                rederFisheyeFrame();
+
                 char c = Console.ReadKey(true).KeyChar;
 
                 if (c == 'k')
@@ -62,31 +63,34 @@
                 {
                     playerRotation = (playerRotation - turnSpeed + Math.PI * 2) % (Math.PI * 2);
                 }
-
-                //wrong fisheye approach
-                List<double> rayDistances = new List<double>();
-
-                for (int i = fov/-2; i <= fov/2; i++)
-                {
-                    double change = i * rad;
-                    rayDistances.Add(castRay(playerPosition, playerRotation + change));
-                }
-
-                drawWalls(rayDistances);
             }
+        }
+
+        //wrong fisheye approach
+        static void rederFisheyeFrame()
+        {
+            List<double> rayDistances = new List<double>();
+
+            for (int i = fov / -2; i <= fov / 2; i++)
+            {
+                double change = i * rad;
+                rayDistances.Add(castRay(playerPosition, playerRotation + change));
+            }
+
+            drawWalls(rayDistances);
         }
 
         static void drawWalls(List<double> rayDistances)
         {
             Console.SetCursorPosition(0, 0);
 
-            String walls = "";
+            string walls = "";
 
-            for(int i = windowHeight; i > 0; i--)
+            for (int i = windowHeight; i > 0; i--)
             {
                 for (int j = 0; j < rayDistances.Count; j++)
                 {
-                    double distance = rayDistances[j]*(windowHeight/10);
+                    double distance = rayDistances[j] * (windowHeight / 10);
                     if (distance >= i)
                     {
                         walls += "██";
@@ -101,11 +105,13 @@
             }
 
             Console.WriteLine(walls);
+            Console.WriteLine(playerRotation);
+            Console.WriteLine(rotToVector(playerRotation));
         }
 
-        static double castRay((double,double)origin, double direction)
+        static double castRay((double, double) origin, double direction)
         {
-            (double, double) ray = (- Math.Sin(direction), Math.Cos(direction));
+            (double, double) ray = rotToVector(direction);
 
             (double, double) rayposition = origin;
             double raydistance = oobValue;
@@ -113,26 +119,8 @@
             //simulate the ray
             for (double i = 0; i < viewdistance; i += raySpeed)
             {
-                if (ray.Item1 > 0)
-                {
-                    rayposition.Item1 += ray.Item1 * raySpeed;
-                }
-
-                if (ray.Item1 < 0)
-                {
-                    rayposition.Item1 -= ray.Item1 * raySpeed;
-                }
-
-                if (ray.Item2 > 0)
-                {
-                    rayposition.Item2 += ray.Item2 * raySpeed;
-                }
-
-                if (ray.Item2 < 0)
-                {
-                    rayposition.Item2 -= ray.Item2 * raySpeed;
-                }
-
+                rayposition.Item1 += ray.Item1 * raySpeed;
+                rayposition.Item2 += ray.Item2 * raySpeed;
 
                 try
                 {
@@ -153,16 +141,10 @@
             return raydistance;
         }
 
-        static void printMap(int[,] map)
+        static (double, double) rotToVector(double rotation)
         {
-            for (int i = 0; i < map.GetLength(0); i++)
-            {
-                for (int j = 0; j < map.GetLength(1); j++)
-                {
-                    Console.Write(map[i, j] + " ");
-                }
-                Console.WriteLine();
-            }
+            return (-Math.Cos(rotation), Math.Sin(rotation)); //up is negative
+            return (Math.Sin(rotation), Math.Cos(rotation)); //up is negative
         }
     }
 }
