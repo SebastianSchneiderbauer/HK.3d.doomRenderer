@@ -55,6 +55,10 @@
                 {
                     playerRotation = (playerRotation - turnSpeed + Math.PI * 2) % (Math.PI * 2);
                 }
+                else if (c == 'm')
+                {
+                    printMap();
+                }
             }
         }
 
@@ -116,8 +120,6 @@
                     }
                 }
             }
-
-            printMap();
         }
 
         // right non fisheye approach
@@ -203,16 +205,23 @@
                 frame += " │\n";
             }
             
-            frame += "└";
+            frame += "├";
 
             for (int x = 0; x < rayDistances.Count+1; x++)
             {
-                frame += "──";
+                if (x == 11)
+                {
+                    frame += "┬─";
+                }
+                else
+                {
+                    frame += "──";
+                }
             }
 
             frame += "┘";
 
-            Console.Write(frame+ "\nw:   forewards\ns:   backwards\na/d: turn left/right");
+            Console.Write(frame+ "\n│ w:   forewards       │\n│ s:   backwards       │\n│ a/d: turn left/right │\n│ m:   toggle map      │\n└──────────────────────┘");
         }
 
         static double castRay((double, double) origin, double direction)
@@ -254,16 +263,40 @@
 
         static void printMap()
         {
+            (int y, int x) = ((int)Math.Round(playerPosition.Item1), (int)Math.Round(playerPosition.Item2));
+
+            Console.Clear();
+
             for (int i = 0; i < map.GetLength(0); i++)
             {
                 for (int j = 0; j < map.GetLength(1); j++)
                 {
-                    Console.Write(map[i, j] + " ");
+                    if (i == y && j == x)
+                    {
+                        Console.Write("[]");
+                    }
+                    else if (map[i, j] == 0)
+                    {
+                        Console.Write("  ");
+                    }
+                    else if (map[i, j] == 1)
+                    {
+                        Console.Write("██");
+                    }
                 }
 
                 Console.WriteLine();
             }
-            Console.ReadKey(true);
+
+            while (true)
+            {
+                char c = Console.ReadKey(true).KeyChar;
+                if (c == 'm')
+                {
+                    Console.Clear();
+                    break;
+                }
+            }
         }
     }
 }
