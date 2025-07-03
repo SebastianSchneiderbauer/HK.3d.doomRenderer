@@ -162,17 +162,18 @@
                     int wallHeight = (int)(windowHeight / Math.Max(0.01, rayDistances[x]));
                     int ceiling = (windowHeight - wallHeight) / 2;//you can use this if you want to limit the height of walls
                     int floor = ceiling + wallHeight;
+                    double max = rayDistances.Max();
 
                     if (y >= ceiling && y <= floor)
                     {
-                        if (rayDistances[x] > 12)
+                        if ((rayDistances[x] / max) > 0.75)
                         {
                             frame += "░░";
                         }
-                        else if (rayDistances[x] > 8) {
+                        else if ((rayDistances[x] / max) > 0.5) {
                             frame += "▒▒";
                         }
-                        else if (rayDistances[x] > 4)
+                        else if ((rayDistances[x] / max) > 0.25)
                         {
                             frame += "▓▓";
                         }
